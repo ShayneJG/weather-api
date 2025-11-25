@@ -1,0 +1,1 @@
+# backend for weather-api. Accepts POST requests from weather station. Accepts GET requests
