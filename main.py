@@ -1,5 +1,10 @@
-# backend for weather-api. Accepts POST requests from weather station. Accepts GET requests
+"""
+Author: Shayne Geilman 
+Weather API backend.
+2025
 
+Receives weather data from an ECOWITT WS2910 weather station and serves it via REST endpoints.
+"""
 from fastapi import FastAPI, Request
 import datetime
 app = FastAPI()
@@ -57,14 +62,28 @@ async def report(request: Request):
     
 @app.get("/data/latest")
 async def get_latest_report():
+    """
+    GET request endpoint to return the raw latest weather station report.
+    """
     return latest_report
 
 @app.get("/health")
 async def health():
+    """
+    GET request endpoint to establish the health of the server.
+
+    Returns JSON with status: ok to determine whether the server is running. 
+    """
     return {"status": "ok"}
 
 
 def display_latest():
+    """
+    Displays the latest weather data to the terminal.
+
+    When the backend receives POST data from the weather station, it is stored in a global variable
+    and then printed to the terminal for debugging purposes. 
+    """
     date = datetime.datetime.now()
     print(f"\n[{date}] Latest weather data:")
     for key,value in latest_report.items():
