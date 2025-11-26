@@ -9,7 +9,7 @@ latest_report = {}
 @app.post("/data/report")
 async def report(request: Request):
     form_data = await request.form()
-    latest_order = dict(form_data)
+    latest_report = dict(form_data)
     # TODO: Convert received data from farenheit to celcius.
     return {"status": "received"}
     
