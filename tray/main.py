@@ -1,8 +1,10 @@
 import requests
 from PIL import Image, ImageDraw, ImageFont
 import pystray
+import threading
+import time
 # Hardcoded for now for testing purposes
-backend_location = "http://192.168.50.155:8000"
+backend_location = "http://192.168.50.115:8000"
 #TODO: Translate farenheit to celsius
 def fetch_latest_weather():
     """
@@ -37,11 +39,14 @@ def create_menu(data):
 
     :param data: Data object containing key:value pairs representing weather station data. 
     """
-    return pystray.Menu(
-        pystray.MenuItem(f"Temperature: {data.get('tempf', '?')}°F", None),
-        pystray.MenuItem(f"Humidity: {data.get('humidity', '?')}%", None),
-        pystray.MenuItem("Quit", lambda: quit_app(icon))
-    )
+    items = []
+    skip_fields = ['PASSKEY', 'stationtype', 'runtime', 'heap', 'freq', 'model', 'interval']
+    for key,value in data.items():
+        if key not in skip_fields:
+            items.append(pystray.MenuItem(f"{key}: {value}", None))
+
+    items.append(pystray.MenuItem(f"Quit", quit_app))
+    return pystray.Menu(*items)
 
 def quit_app(icon):
     """
@@ -51,9 +56,28 @@ def quit_app(icon):
     """
     icon.stop()
 
+def update_loop():
+    """
+    Checks for latest weather reported from backend every 60 seconds. 
+    Updates the icon and menu based on the data received. Passes the data
+    to the create_menu function in order to populate the menu. Passes the uv (for now)
+    to the create_icon function to draw the UV as a number in the tray. 
+    """
+    while True:
+        try:
+            data = fetch_latest_weather()
+            uv = data.get('uv', '--')
+            icon.icon = create_icon(uv)
+            icon.menu = create_menu(data)
+        except Exception as e:
+            print(f"Error fetching data: {e}")
+        time.sleep(60)
+
 
 
 if __name__ == "__main__":
     icon = pystray.Icon("weather", create_icon("-"), "Weather", create_menu({}))
-    # icon.run() is currently blocking. Application runs until quit_app is called by clicking the Quit MenuItem.
+    thread = threading.Thread(target=update_loop, daemon=True)
+    thread.start()
+
     icon.run()
