@@ -34,5 +34,5 @@ class WeatherWindow:
     
     def update(self, data):
         self.uv_label.config(text=f"UV: {data.get('uv', '--')}")
-        self.temp_label.config(text=f"Temp: {data.get('tempf', '--')}°F")
+        self.temp_label.config(text=f"Temp: {data.get('temp', '--')}°C")
         self.humidity_label.config(text=f"Humidity: {data.get('humidity', '--')}%")
