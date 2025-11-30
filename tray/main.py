@@ -5,7 +5,7 @@ import threading
 import time
 # Hardcoded for now for testing purposes
 backend_location = "http://192.168.50.115:8000"
-#TODO: Translate farenheit to celsius
+
 def fetch_latest_weather():
     """
     Sends a GET request to the backend to retrieve the latest weather station report.
