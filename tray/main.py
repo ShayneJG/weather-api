@@ -13,7 +13,7 @@ def fetch_latest_weather():
     endpoint = "/data/latest"
     response = requests.get(backend_location + endpoint)
     return response.json()
-    
+
 def create_icon(uv_value):
     """
     Creates an icon to be shown in the tray. Currently supports displaying the UV.
@@ -30,6 +30,7 @@ def create_icon(uv_value):
     draw.text((16, 12), str(uv_value), fill='white', font=font)
     return image
 
+
 def create_menu(data):
     """
     Creates the right-click menu for the tray. 
@@ -40,11 +41,17 @@ def create_menu(data):
     :param data: Data object containing key:value pairs representing weather station data. 
     """
     items = []
-    skip_fields = ['PASSKEY', 'stationtype', 'runtime', 'heap', 'freq', 'model', 'interval']
-    for key,value in data.items():
-        if key not in skip_fields:
-            items.append(pystray.MenuItem(f"{key}: {value}", None))
+    skip_fields = [
+        'PASSKEY', 'stationtype', 'runtime', 'heap', 'freq', 'model',
+        'interval'
+    ]
+    for key, value in data.items():
+        if key in skip_fields:
+            continue
 
+        items.append(pystray.MenuItem(f"{key}: {value}", None))
+
+    # append the extra tooltips
     items.append(pystray.MenuItem(f"Quit", quit_app))
     return pystray.Menu(*items)
 
@@ -73,10 +80,26 @@ def update_loop():
             print(f"Error fetching data: {e}")
         time.sleep(60)
 
+def convert_to_celcius(value):
+    """
+    Converts a given value from farenheit to celcius.
+    
+    :param value: The value in farenheit. 
+    :return value: The value in celcius.
+    """
+    return round((value - 32) / 1.8, 1)
 
+def convert_to_metric(value):
+    """
+    Converts a given value from MPH to KPH. 
+
+    :param value: The value in MPH.
+    :return value: The value in KPH.
+    """
+    return round(value * 1.609344, 2)
 
 if __name__ == "__main__":
-    icon = pystray.Icon("weather", create_icon("-"), "Weather", create_menu({}))
+    icon = pystray.Icon("weather", create_icon("--"), "Weather", create_menu({}))
     thread = threading.Thread(target=update_loop, daemon=True)
     thread.start()
 
