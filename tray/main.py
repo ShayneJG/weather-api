@@ -3,9 +3,9 @@ from PIL import Image, ImageDraw, ImageFont
 import pystray
 import threading
 import time
+from window import WeatherWindow, app_state
 # Hardcoded for now for testing purposes
 backend_location = "http://192.168.50.115:8000"
-
 def fetch_latest_weather():
     """
     Sends a GET request to the backend to retrieve the latest weather station report.
@@ -52,8 +52,10 @@ def create_menu(data):
         items.append(pystray.MenuItem(f"{key}: {value}", None))
 
     # append the extra tooltips
+    items.append(pystray.MenuItem("Show", on_click, default=True))
     items.append(pystray.MenuItem(f"Quit", quit_app))
     return pystray.Menu(*items)
+
 
 def quit_app(icon):
     """
@@ -62,6 +64,8 @@ def quit_app(icon):
     :param icon: The icon representing the tray application.
     """
     icon.stop()
+    weather_window.window.quit()
+
 
 def update_loop():
     """
@@ -73,12 +77,27 @@ def update_loop():
     while True:
         try:
             data = fetch_latest_weather()
+            app_state["latest_data"] = data
             uv = data.get('uv', '--')
             icon.icon = create_icon(uv)
             icon.menu = create_menu(data)
         except Exception as e:
             print(f"Error fetching data: {e}")
         time.sleep(60)
+
+
+def on_click(icon, item):
+    """
+    On click function for the tray icon. 
+
+    :param icon: passed by pystray, required but unused.
+    :param item: passed by pystray, required but unused.
+    """
+    global app_state
+    print("on click clicked")
+    app_state["show_window"] = True
+    print(f"on click - flag set to: {app_state["show_window"]}")
+
 
 def convert_to_celcius(value):
     """
@@ -98,9 +117,13 @@ def convert_to_metric(value):
     """
     return round(value * 1.609344, 2)
 
+
 if __name__ == "__main__":
-    icon = pystray.Icon("weather", create_icon("--"), "Weather", create_menu({}))
+    icon = pystray.Icon("weather", create_icon("--"), "Weather",
+                        create_menu({}))
+    icon.run_detached()
+    time.sleep(1)
+    weather_window = WeatherWindow()
     thread = threading.Thread(target=update_loop, daemon=True)
     thread.start()
-
-    icon.run()
+    weather_window.window.mainloop()
