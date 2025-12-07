@@ -1,61 +1,119 @@
+"""
+Dark mode weather window with activity recommendations.
+
+Displays color-coded activity cards for run/cycle/swim and current weather metrics.
+"""
 import tkinter as tk
+from ui_components import ActivityCard, WeatherMetricRow, COLORS
 
 app_state = {"show_window": False, "latest_data": {}, "recommendations": {}}
 
+
 class WeatherWindow:
+    """Borderless dark mode window showing activity recommendations and weather."""
 
     def __init__(self):
         self.window = tk.Tk()
-        self.window.overrideredirect(True)  # Removes title bar
-        self.window.attributes('-topmost', True)  # Stays on top
-        self.window.withdraw()  # Start hidden
-        # Labels for displaying data
-        self.uv_label = tk.Label(self.window,
-                                 text="UV: --",
-                                 font=("Arial", 24))
-        self.uv_label.pack(pady=10)
+        self.window.overrideredirect(True)
+        self.window.attributes('-topmost', True)
+        self.window.withdraw()
+        self.window.configure(bg=COLORS['bg_dark'])
 
-        self.temp_label = tk.Label(self.window,
-                                   text="Temp: --",
-                                   font=("Arial", 14))
-        self.temp_label.pack()
+        # Main container
+        main_frame = tk.Frame(self.window, bg=COLORS['bg_dark'], padx=15, pady=15)
+        main_frame.pack(fill='both', expand=True)
 
-        self.humidity_label = tk.Label(self.window,
-                                       text="Humidity: --",
-                                       font=("Arial", 14))
-        self.humidity_label.pack()
+        # Title
+        title = tk.Label(
+            main_frame,
+            text="ACTIVITY RECOMMENDATIONS",
+            font=("Segoe UI", 11, "bold"),
+            bg=COLORS['bg_dark'],
+            fg=COLORS['text_primary']
+        )
+        title.pack(pady=(0, 10))
 
-        # Close when clicking outside
+        # Activity cards
+        self.activity_cards = {}
+        for activity in ['run', 'cycle', 'swim']:
+            card = ActivityCard(main_frame, activity)
+            card.pack(fill='x', pady=5)
+            self.activity_cards[activity] = card
+
+        # Separator
+        separator = tk.Frame(main_frame, height=1, bg=COLORS['border'])
+        separator.pack(fill='x', pady=10)
+
+        # Weather metrics section
+        metrics_title = tk.Label(
+            main_frame,
+            text="CURRENT CONDITIONS",
+            font=("Segoe UI", 9, "bold"),
+            bg=COLORS['bg_dark'],
+            fg=COLORS['text_secondary']
+        )
+        metrics_title.pack(pady=(5, 5))
+
+        # Create metric rows
+        self.metrics = {}
+        metric_labels = [
+            ('uv', 'UV Index'),
+            ('temp_c', 'Temperature'),
+            ('wind_speed_kmh', 'Wind Speed'),
+            ('wind_dir', 'Wind Direction'),
+            ('solarradiation', 'Solar Radiation'),
+            ('humidity', 'Humidity')
+        ]
+
+        for key, label in metric_labels:
+            row = WeatherMetricRow(main_frame, label)
+            row.pack(fill='x')
+            self.metrics[key] = row
+
+        # Close on focus loss
         self.window.bind('<FocusOut>', lambda e: self.hide())
         self.poll_for_updates()
 
     def show(self):
-        # Position near bottom-right of screen
-        print("showing window")
+        """Show window near bottom-right of screen."""
         self.window.geometry("+{}+{}".format(
-            self.window.winfo_screenwidth() - 250,
-            self.window.winfo_screenheight() - 300))
+            self.window.winfo_screenwidth() - 350,
+            self.window.winfo_screenheight() - 550
+        ))
         self.window.deiconify()
         self.window.focus_force()
 
     def hide(self):
+        """Hide the window."""
         self.window.withdraw()
 
-    def update(self, data):
-        self.uv_label.config(text=f"UV: {data.get('uv', '--')}")
-        self.temp_label.config(text=f"Temp: {data.get('tempf', '--')}°C")
-        self.humidity_label.config(
-            text=f"Humidity: {data.get('humidity', '--')}%")
+    def update(self, data: dict, recommendations: dict):
+        """
+        Update UI with weather data and recommendations.
+
+        :param data: Current weather data dictionary
+        :param recommendations: Activity recommendations dictionary
+        """
+        # Update activity cards
+        for activity, rec in recommendations.items():
+            if activity in self.activity_cards:
+                self.activity_cards[activity].update_status(rec)
+
+        # Update metrics
+        self.metrics['uv'].update_value(f"{data.get('uv', '--')}")
+        self.metrics['temp_c'].update_value(f"{data.get('temp_c', '--')}°C")
+        self.metrics['wind_speed_kmh'].update_value(f"{data.get('wind_speed_kmh', '--')} km/h")
+        self.metrics['wind_dir'].update_value(f"{data.get('winddir', '--')}°")
+        self.metrics['solarradiation'].update_value(f"{data.get('solarradiation', '--')} W/m²")
+        self.metrics['humidity'].update_value(f"{data.get('humidity', '--')}%")
 
     def poll_for_updates(self):
-        print(f"Polling - flag: {app_state['show_window']}")
-        
-        if app_state["latest_data"]:
-            self.update(app_state["latest_data"])
-        
+        """Poll for state changes every second."""
+        if app_state["latest_data"] and app_state["recommendations"]:
+            self.update(app_state["latest_data"], app_state["recommendations"])
+
         if app_state["show_window"]:
-            print("Showing window")
             app_state["show_window"] = False
             self.show()
-        
+
         self.window.after(1000, self.poll_for_updates)
