@@ -106,13 +106,23 @@ def update_loop():
             # Update app state
             app_state["latest_data"] = current_weather
             app_state["recommendations"] = recommendations
+            app_state["error"] = None
 
             # Update tray icon and menu
             uv = current_weather.get('uv', '--')
             icon.icon = create_icon(uv)
             icon.menu = create_menu(current_weather)
+
+        except requests.exceptions.ConnectionError:
+            app_state["error"] = "Cannot connect to backend"
+            print("Backend connection failed")
+        except requests.exceptions.Timeout:
+            app_state["error"] = "Backend request timed out"
+            print("Backend timeout")
         except Exception as e:
-            print(f"Error fetching data: {e}")
+            app_state["error"] = f"Error: {str(e)}"
+            print(f"Error in update loop: {e}")
+
         time.sleep(60)
 
 
