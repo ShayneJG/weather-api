@@ -90,18 +90,27 @@ def quit_app(icon):
 
 def update_loop():
     """
-    Checks for latest weather reported from backend every 60 seconds. 
-    Updates the icon and menu based on the data received. Passes the data
-    to the create_menu function in order to populate the menu. Passes the uv (for now)
-    to the create_icon function to draw the UV as a number in the tray. 
+    Checks for latest weather reported from backend every 60 seconds.
+    Fetches current weather and historical data, computes recommendations,
+    and updates the icon and menu.
     """
     while True:
         try:
-            data = fetch_latest_weather()
-            app_state["latest_data"] = data
-            uv = data.get('uv', '--')
+            # Fetch current weather and history
+            current_weather = fetch_latest_weather()
+            history = fetch_history(hours=24)
+
+            # Compute recommendations
+            recommendations = get_all_recommendations(current_weather, history, config)
+
+            # Update app state
+            app_state["latest_data"] = current_weather
+            app_state["recommendations"] = recommendations
+
+            # Update tray icon and menu
+            uv = current_weather.get('uv', '--')
             icon.icon = create_icon(uv)
-            icon.menu = create_menu(data)
+            icon.menu = create_menu(current_weather)
         except Exception as e:
             print(f"Error fetching data: {e}")
         time.sleep(60)
