@@ -70,6 +70,16 @@ class WeatherWindow:
             row.pack(fill='x')
             self.metrics[key] = row
 
+        # Error label (hidden by default)
+        self.error_label = tk.Label(
+            main_frame,
+            text="",
+            font=("Segoe UI", 9, "italic"),
+            bg=COLORS['bg_dark'],
+            fg=COLORS['red'],
+            wraplength=300
+        )
+
         # Close on focus loss
         self.window.bind('<FocusOut>', lambda e: self.hide())
         self.poll_for_updates()
@@ -109,9 +119,18 @@ class WeatherWindow:
 
     def poll_for_updates(self):
         """Poll for state changes every second."""
+        # Check for errors
+        if app_state.get("error"):
+            self.error_label.config(text=app_state["error"])
+            self.error_label.pack(pady=10)
+        else:
+            self.error_label.pack_forget()
+
+        # Update data if available
         if app_state["latest_data"] and app_state["recommendations"]:
             self.update(app_state["latest_data"], app_state["recommendations"])
 
+        # Show window if requested
         if app_state["show_window"]:
             app_state["show_window"] = False
             self.show()
