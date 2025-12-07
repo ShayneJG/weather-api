@@ -158,12 +158,66 @@ def convert_to_metric(value):
     return round(value * 1.609344, 2)
 
 
+def check_backend_available():
+    """
+    Check if the backend is available before starting the app.
+
+    :return: True if backend is reachable, False otherwise
+    """
+    try:
+        response = requests.get(backend_location + "/health", timeout=5)
+        if response.status_code == 200:
+            print(f"Backend connected: {backend_location}")
+            return True
+        else:
+            print(f"Backend returned status {response.status_code}")
+            return False
+    except requests.exceptions.ConnectionError:
+        print(f"ERROR: Cannot connect to backend at {backend_location}")
+        print("Please ensure the backend is running and the IP address is correct.")
+        return False
+    except requests.exceptions.Timeout:
+        print(f"ERROR: Backend connection timed out at {backend_location}")
+        return False
+    except Exception as e:
+        print(f"ERROR: Unexpected error checking backend: {e}")
+        return False
+
+
 if __name__ == "__main__":
+    # Check backend is available
+    if not check_backend_available():
+        print("\nCannot start tray application without backend connection.")
+        print("Exiting...")
+        exit(1)
+
+    # Fetch initial data before starting UI
+    print("Fetching initial weather data...")
+    try:
+        current_weather = fetch_latest_weather()
+        history = fetch_history(hours=24)
+        recommendations = get_all_recommendations(current_weather, history, config)
+
+        # Populate app_state with initial data
+        app_state["latest_data"] = current_weather
+        app_state["recommendations"] = recommendations
+        app_state["error"] = None
+        print("Initial data loaded successfully")
+    except Exception as e:
+        print(f"Warning: Could not fetch initial data: {e}")
+        # Continue anyway - update loop will retry
+
+    # Create tray icon
     icon = pystray.Icon("weather", create_icon("--"), "Weather",
                         create_menu({}))
     icon.run_detached()
     time.sleep(1)
+
+    # Create window (now has initial data)
     weather_window = WeatherWindow()
+
+    # Start background update thread
     thread = threading.Thread(target=update_loop, daemon=True)
     thread.start()
+
     weather_window.window.mainloop()

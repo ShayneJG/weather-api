@@ -21,6 +21,14 @@ def evaluate_activity(activity: str, weather: Dict, config: Dict) -> Dict:
     :param config: Configuration dictionary with thresholds
     :return: Evaluation result dictionary
     """
+    # Validate inputs
+    if not isinstance(weather, dict):
+        return {
+            "status": "red",
+            "reasons": ["No weather data available"],
+            "score": 0
+        }
+
     if activity not in config['activity_thresholds']:
         return {
             "status": "red",
@@ -96,15 +104,23 @@ def predict_good_time(activity: str, history: List[Dict], config: Dict) -> Optio
     :param config: Configuration dictionary with thresholds
     :return: Prediction message or None if no good times found
     """
+    # Validate history is a list
+    if not isinstance(history, list):
+        return None
+
     good_times = []
 
     for record in history:
+        # Skip if record is not a dictionary
+        if not isinstance(record, dict):
+            continue
+
         evaluation = evaluate_activity(activity, record, config)
         if evaluation['status'] == 'green':
             try:
                 timestamp = datetime.fromisoformat(record['timestamp'])
                 good_times.append(timestamp)
-            except (KeyError, ValueError):
+            except (KeyError, ValueError, TypeError):
                 continue
 
     if not good_times:
@@ -124,6 +140,19 @@ def get_all_recommendations(current_weather: Dict, history: List[Dict], config: 
     :param config: Configuration dictionary
     :return: Dictionary with recommendations for each activity
     """
+    # Validate inputs
+    if not isinstance(current_weather, dict):
+        # Return empty recommendations if no valid weather data
+        return {
+            activity: {
+                "status": "red",
+                "reasons": ["No weather data available"],
+                "score": 0,
+                "prediction": None
+            }
+            for activity in ['run', 'cycle', 'swim']
+        }
+
     recommendations = {}
 
     for activity in ['run', 'cycle', 'swim']:
@@ -131,7 +160,7 @@ def get_all_recommendations(current_weather: Dict, history: List[Dict], config: 
         prediction = None
 
         # Only show prediction if conditions aren't currently good
-        if evaluation['status'] != 'green':
+        if evaluation['status'] != 'green' and isinstance(history, list):
             prediction = predict_good_time(activity, history, config)
 
         recommendations[activity] = {
