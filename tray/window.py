@@ -1,6 +1,6 @@
 import tkinter as tk
 
-app_state = {"show_window": False, "latest_data": {}}
+app_state = {"show_window": False, "latest_data": {}, "recommendations": {}}
 
 class WeatherWindow:
 
