@@ -3,15 +3,36 @@ from PIL import Image, ImageDraw, ImageFont
 import pystray
 import threading
 import time
+import json
 from window import WeatherWindow, app_state
+from recommendations import get_all_recommendations
+
 # Hardcoded for now for testing purposes
 backend_location = "http://192.168.50.115:8000"
+
+# Load configuration
+with open('config.json', 'r') as f:
+    config = json.load(f)
+
+
 def fetch_latest_weather():
     """
     Sends a GET request to the backend to retrieve the latest weather station report.
     """
     endpoint = "/data/latest"
-    response = requests.get(backend_location + endpoint)
+    response = requests.get(backend_location + endpoint, timeout=5)
+    return response.json()
+
+
+def fetch_history(hours=24):
+    """
+    Sends a GET request to the backend to retrieve historical weather data.
+
+    :param hours: Number of hours to look back (default 24)
+    :return: List of historical weather records
+    """
+    endpoint = f"/data/history?hours={hours}"
+    response = requests.get(backend_location + endpoint, timeout=5)
     return response.json()
 
 def create_icon(uv_value):
