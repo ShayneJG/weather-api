@@ -1,0 +1,26 @@
+{
+  "activity_thresholds": {
+    "run": {
+      "temp_min_c": 8,
+      "temp_max_c": 30,
+      "uv_max": 3,
+      "uv_moderate_max": 6,
+      "rain_rate_max_mm": 0.5
+    },
+    "cycle": {
+      "temp_min_c": 8,
+      "temp_max_c": 30,
+      "uv_max": 3,
+      "uv_moderate_max": 6,
+      "rain_rate_max_mm": 0.5,
+      "wind_max_kmh": 30
+    },
+    "swim": {
+      "temp_min_c": 8,
+      "temp_max_c": 35,
+      "uv_max": 3,
+      "uv_moderate_max": 6,
+      "rain_rate_max_mm": 0.5
+    }
+  }
+}
