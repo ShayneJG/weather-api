@@ -39,16 +39,26 @@ def create_icon(uv_value):
     """
     Creates an icon to be shown in the tray. Currently supports displaying the UV.
 
-    Generates a 64x64 image with the UV written to the centre. 
-    
+    Generates a 64x64 image with the UV written to the centre.
+
     :param uv_value: The reported UV from the latest weather station report.
-    
-    :return image: The created image object. 
+
+    :return image: The created image object.
     """
     image = Image.new('RGB', (64, 64), color='darkblue')
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype("arial.ttf", 48)
-    draw.text((16, 12), str(uv_value), fill='white', font=font)
+
+    # Centre the text for both single and double digit UV values
+    uv_text = str(uv_value)
+    bbox = draw.textbbox((0, 0), uv_text, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    x = (64 - text_width) // 2
+    # Adjust y to account for font descender space (moves text down slightly)
+    y = (64 - text_height) // 2 - bbox[1]
+
+    draw.text((x, y), uv_text, fill='white', font=font)
     return image
 
 

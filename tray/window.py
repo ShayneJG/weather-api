@@ -85,11 +85,22 @@ class WeatherWindow:
         self.poll_for_updates()
 
     def show(self):
-        """Show window near bottom-right of screen."""
-        self.window.geometry("+{}+{}".format(
-            self.window.winfo_screenwidth() - 350,
-            self.window.winfo_screenheight() - 550
-        ))
+        """Show window near bottom-right of screen, above taskbar."""
+        # Update window to get actual dimensions
+        self.window.update_idletasks()
+
+        # Get window and screen dimensions
+        window_width = self.window.winfo_reqwidth()
+        window_height = self.window.winfo_reqheight()
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+
+        # Calculate taskbar-aware screen height (workarea excludes taskbar)
+        # Add 10px padding from edges
+        x_pos = screen_width - window_width - 10
+        y_pos = screen_height - window_height - 50  # 50px accounts for typical taskbar height
+
+        self.window.geometry("+{}+{}".format(int(x_pos), int(y_pos)))
         self.window.deiconify()
         self.window.focus_force()
 
