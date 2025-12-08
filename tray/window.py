@@ -113,7 +113,7 @@ class WeatherWindow:
         self.metrics['uv'].update_value(f"{data.get('uv', '--')}")
         self.metrics['temp_c'].update_value(f"{data.get('temp_c', '--')}°C")
         self.metrics['wind_speed_kmh'].update_value(f"{data.get('wind_speed_kmh', '--')} km/h")
-        self.metrics['wind_dir'].update_value(f"{data.get('winddir', '--')}°")
+        self.metrics['wind_dir'].update_value(f"{data.get('wind_dir', '--')}°")
         self.metrics['solarradiation'].update_value(f"{data.get('solarradiation', '--')} W/m²")
         self.metrics['humidity'].update_value(f"{data.get('humidity', '--')}%")
 
