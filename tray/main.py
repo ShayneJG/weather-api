@@ -47,7 +47,11 @@ def create_icon(uv_value):
     """
     image = Image.new('RGB', (64, 64), color='darkblue')
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("arial.ttf", 48)
+    # Use bold font for better visibility in system tray
+    try:
+        font = ImageFont.truetype("arialbd.ttf", 48)  # Arial Bold
+    except:
+        font = ImageFont.truetype("arial.ttf", 48)  # Fallback to regular
 
     # Centre the text for both single and double digit UV values
     uv_text = str(uv_value)
