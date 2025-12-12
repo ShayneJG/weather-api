@@ -22,16 +22,19 @@ Update this file when preparing a new release.
 ## Building the Executable
 
 1. Navigate to the tray directory:
+
    ```bash
    cd tray
    ```
 
 2. Ensure virtual environment is activated and dependencies are installed:
+
    ```bash
    pip install -r requirements.txt
    ```
 
 3. Run the build script:
+
    ```bash
    python build.py
    ```
@@ -43,8 +46,7 @@ Update this file when preparing a new release.
 ### 1. Prepare the Release
 
 1. Update version in `tray/version.py`
-2. Update `tray/update_checker.py` with your GitHub username (if not already done)
-3. Commit all changes to main:
+2. Commit all changes to main:
    ```bash
    git add .
    git commit -m "Prepare release v{version}"
@@ -114,15 +116,18 @@ To test the executable:
 ## Troubleshooting
 
 **Build fails with import errors:**
+
 - Ensure all dependencies are installed: `pip install -r requirements.txt`
 - Check that virtual environment is activated
 
 **Executable crashes on startup:**
+
 - Test in development mode first: `python main.py`
 - Check that `config.json` is being bundled correctly
 - Review PyInstaller logs in `build/WeatherTray/`
 
 **Update checker doesn't work:**
+
 - Verify GitHub repository is public
 - Check that `GITHUB_REPO` is set correctly in `update_checker.py`
 - Ensure release tags follow semantic versioning (v1.0.0)
