@@ -4,8 +4,11 @@ import pystray
 import threading
 import time
 import json
+import webbrowser
 from window import WeatherWindow, app_state
 from recommendations import get_all_recommendations
+from version import __version__
+from update_checker import check_for_updates
 
 # Hardcoded for now for testing purposes
 backend_location = "http://192.168.50.115:8000"
@@ -86,9 +89,21 @@ def create_menu(data):
 
         items.append(pystray.MenuItem(f"{key}: {value}", None))
 
-    # append the extra tooltips
+    # Append menu actions
+    items.append(pystray.Menu.SEPARATOR)
     items.append(pystray.MenuItem("Show", on_click, default=True))
-    items.append(pystray.MenuItem(f"Quit", quit_app))
+
+    # Check for updates
+    update_available, latest_version, download_url = check_for_updates()
+    if update_available:
+        items.append(pystray.MenuItem(
+            f"⚠ Update available: v{latest_version}",
+            lambda: webbrowser.open(download_url)
+        ))
+    else:
+        items.append(pystray.MenuItem(f"Version: v{__version__}", None))
+
+    items.append(pystray.MenuItem("Quit", quit_app))
     return pystray.Menu(*items)
 
 
