@@ -7,7 +7,7 @@ import requests
 from version import __version__
 
 
-GITHUB_REPO = "your-username/weather-api"  # Update this with your GitHub username
+GITHUB_REPO = "ShayneJG/weather-api"  
 RELEASE_API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 
 
